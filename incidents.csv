@@ -1,0 +1,86 @@
+service,symptom,root_cause,fix,resolved
+payments,cpu_saturated,traffic spike,scale out,1
+api,disk_full,unrotated logs,rotate logs,1
+payments,api_timeouts,upstream rate limit,enable backoff,1
+auth,disk_full,unrotated logs,enable backoff,0
+api,disk_full,unrotated logs,rotate logs,1
+payments,disk_full,unrotated logs,restart worker,0
+search,error_rate_after_deploy,bad deploy,rollback,1
+api,error_rate_after_deploy,bad deploy,enable backoff,0
+search,memory_climbing,cache without eviction,restart service,1
+payments,api_timeouts,upstream rate limit,enable backoff,1
+auth,error_rate_after_deploy,bad deploy,restart service,0
+payments,error_rate_after_deploy,bad deploy,rollback,1
+api,error_rate_after_deploy,bad deploy,rollback,1
+payments,api_timeouts,upstream rate limit,rotate logs,0
+payments,memory_climbing,cache without eviction,restart service,0
+api,cpu_saturated,traffic spike,scale out,1
+api,disk_full,unrotated logs,restart worker,0
+search,disk_full,unrotated logs,rotate logs,0
+auth,disk_full,unrotated logs,rollback,0
+search,disk_full,unrotated logs,rotate logs,1
+payments,cpu_saturated,traffic spike,rotate logs,0
+api,disk_full,unrotated logs,enable backoff,0
+api,disk_full,unrotated logs,scale out,0
+search,memory_climbing,cache without eviction,restart service,0
+api,api_timeouts,upstream rate limit,enable backoff,1
+search,cpu_saturated,traffic spike,restart worker,0
+api,db_connections_high,connection pool leak,restart worker,1
+payments,cpu_saturated,traffic spike,restart worker,0
+payments,api_timeouts,upstream rate limit,scale out,0
+api,disk_full,unrotated logs,rotate logs,1
+search,api_timeouts,upstream rate limit,enable backoff,1
+api,error_rate_after_deploy,bad deploy,rollback,1
+payments,db_connections_high,connection pool leak,enable backoff,0
+auth,disk_full,unrotated logs,rotate logs,1
+search,disk_full,unrotated logs,scale out,0
+auth,memory_climbing,cache without eviction,scale out,0
+api,db_connections_high,connection pool leak,restart worker,1
+api,api_timeouts,upstream rate limit,rotate logs,0
+api,cpu_saturated,traffic spike,restart service,1
+auth,error_rate_after_deploy,bad deploy,rollback,1
+auth,disk_full,unrotated logs,scale out,0
+api,disk_full,unrotated logs,rollback,0
+auth,cpu_saturated,traffic spike,scale out,1
+api,cpu_saturated,traffic spike,scale out,1
+api,db_connections_high,connection pool leak,restart worker,1
+payments,disk_full,unrotated logs,rotate logs,1
+api,memory_climbing,cache without eviction,restart service,1
+api,memory_climbing,cache without eviction,rotate logs,1
+auth,db_connections_high,connection pool leak,restart service,0
+api,memory_climbing,cache without eviction,restart service,1
+search,disk_full,unrotated logs,rotate logs,0
+auth,memory_climbing,cache without eviction,restart service,1
+api,disk_full,unrotated logs,rotate logs,1
+api,api_timeouts,upstream rate limit,enable backoff,1
+payments,db_connections_high,connection pool leak,rotate logs,0
+api,db_connections_high,connection pool leak,enable backoff,0
+auth,api_timeouts,upstream rate limit,enable backoff,0
+api,db_connections_high,connection pool leak,rotate logs,0
+search,api_timeouts,upstream rate limit,enable backoff,1
+payments,error_rate_after_deploy,bad deploy,rollback,1
+search,error_rate_after_deploy,bad deploy,rollback,1
+api,memory_climbing,cache without eviction,restart service,1
+api,db_connections_high,connection pool leak,restart worker,0
+search,db_connections_high,connection pool leak,rotate logs,0
+auth,db_connections_high,connection pool leak,restart worker,1
+api,api_timeouts,upstream rate limit,rotate logs,0
+api,cpu_saturated,traffic spike,restart worker,0
+payments,disk_full,unrotated logs,rotate logs,0
+search,error_rate_after_deploy,bad deploy,rollback,1
+search,disk_full,unrotated logs,restart worker,0
+search,db_connections_high,connection pool leak,restart worker,1
+search,db_connections_high,connection pool leak,restart worker,1
+api,disk_full,unrotated logs,rotate logs,1
+payments,db_connections_high,connection pool leak,restart worker,0
+payments,api_timeouts,upstream rate limit,enable backoff,1
+api,memory_climbing,cache without eviction,restart service,1
+api,error_rate_after_deploy,bad deploy,rollback,1
+payments,error_rate_after_deploy,bad deploy,rollback,0
+api,disk_full,unrotated logs,restart service,0
+auth,disk_full,unrotated logs,restart worker,0
+api,disk_full,unrotated logs,rotate logs,1
+api,disk_full,unrotated logs,rotate logs,1
+api,db_connections_high,connection pool leak,restart worker,1
+api,db_connections_high,connection pool leak,restart worker,0
+api,cpu_saturated,traffic spike,scale out,1

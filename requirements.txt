@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+groq
+python-dotenv
+hindsight-client
+pytest
+httpx
+matplotlib

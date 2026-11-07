@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#ecedee" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#121415" media="(prefers-color-scheme: dark)">
+    <title>Incident Responder</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23e8a317'/%3E%3Cpath d='M6 22h7l4-10 6 18 4-8h7' fill='none' stroke='%2314202b' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Public+Sans:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #ecedee;
+            --ink: #1b1f23;
+            --mute: #5f666d;
+            --panel: #fff;
+            --line: #d9dcdf;
+            --amber: #e8a317;
+            --amber-soft: #fcf1d6;
+            --teal: #0e6b5c;
+            --teal-soft: #dff1ed;
+            --red: #b3261e;
+            --red-soft: #f6e3e1
+        }
+
+        @media (prefers-color-scheme:dark) {
+            :root {
+                --bg: #121415;
+                --ink: #ecedee;
+                --mute: #9aa0a6;
+                --panel: #1b1e20;
+                --line: #2c3033;
+                --amber: #f0b432;
+                --amber-soft: #3a2f12;
+                --teal: #4cc2ad;
+                --teal-soft: #14332e;
+                --red: #ff8a80;
+                --red-soft: #3a2321
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 16px/1.55 "Public Sans", system-ui, sans-serif;
+            touch-action: manipulation
+        }
+
+        main {
+            max-width: 1020px;
+            margin: 0 auto;
+            padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(3rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left))
+        }
+
+        h1,
+        h2,
+        .fix {
+            font-family: "Bricolage Grotesque", system-ui, sans-serif;
+            letter-spacing: -.02em;
+            margin: 0
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--amber);
+            outline-offset: 2px
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .4rem 0 .2rem
+        }
+
+        header svg {
+            width: 44px;
+            height: 44px;
+            flex: none
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.1
+        }
+
+        .tag {
+            color: var(--mute);
+            font-size: .9rem;
+            margin: 0
+        }
+
+        .pill {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            font-size: .85rem;
+            font-weight: 500;
+            padding: .35rem .8rem;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--panel)
+        }
+
+        .pill i {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--mute)
+        }
+
+        .pill.on i {
+            background: var(--teal)
+        }
+
+        .pill.off i {
+            background: var(--red)
+        }
+
+        /* animated computer */
+        .stage {
+            --c: #3ddbb8;
+            --led: #3ddbb8;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: clamp(.6rem, 3vw, 2rem);
+            margin: 1.4rem 0 1.6rem
+        }
+
+        .stage.firing {
+            --c: #f0b432;
+            --led: #f0b432
+        }
+
+        .stage.fail {
+            --c: #ff8a80;
+            --led: #ff8a80
+        }
+
+        .rack {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: clamp(48px, 9vw, 76px);
+            margin-bottom: 14px
+        }
+
+        .unit {
+            height: 28px;
+            background: #26292c;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0 8px
+        }
+
+        .unit i {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--led);
+            animation: blink 1.7s infinite
+        }
+
+        .unit i:nth-child(2) {
+            animation-delay: .5s
+        }
+
+        .unit:nth-child(2) i {
+            animation-delay: .9s
+        }
+
+        .unit:nth-child(3) i {
+            animation-delay: .3s
+        }
+
+        .unit b {
+            margin-left: auto;
+            width: 38%;
+            height: 3px;
+            background: #3d4247;
+            border-radius: 2px
+        }
+
+        .stage.firing .unit i {
+            animation-duration: .5s
+        }
+
+        .monitor {
+            width: min(440px, 66vw)
+        }
+
+        .bar {
+            background: #26292c;
+            border-radius: 10px 10px 0 0;
+            padding: .45rem .8rem;
+            display: flex;
+            gap: 6px;
+            align-items: center
+        }
+
+        .bar span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #50565b
+        }
+
+        .bar em {
+            margin-left: auto;
+            font-style: normal;
+            font-size: .78rem;
+            color: #a9afb4
+        }
+
+        .screen {
+            position: relative;
+            height: 200px;
+            background: #0b0d0e;
+            overflow: hidden;
+            border-radius: 0 0 10px 10px;
+            font: 12px/1.75 ui-monospace, Consolas, "Roboto Mono", monospace;
+            color: #8b9298;
+            box-shadow: 0 0 0 2px var(--c);
+            transition: box-shadow .4s
+        }
+
+        .logs {
+            position: absolute;
+            inset: 0;
+            padding: 10px 12px;
+            opacity: .5;
+            white-space: nowrap
+        }
+
+        .lines {
+            animation: scroll 24s linear infinite
+        }
+
+        .pulse {
+            position: absolute;
+            left: 0;
+            bottom: 36px;
+            width: 100%;
+            height: 50px
+        }
+
+        .pulse path {
+            fill: none;
+            stroke: var(--c);
+            stroke-width: 2.2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 34 66;
+            animation: run 2.2s linear infinite
+        }
+
+        .pulse .spike {
+            display: none
+        }
+
+        .stage.firing .calm,
+        .stage.fail .calm {
+            display: none
+        }
+
+        .stage.firing .spike,
+        .stage.fail .spike {
+            display: inline
+        }
+
+        .stage.firing .pulse path {
+            animation-duration: .9s
+        }
+
+        .status {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: .5rem .9rem;
+            background: #15181a;
+            color: var(--c);
+            font-weight: 600;
+            font-size: .85rem
+        }
+
+        .status::after {
+            content: "";
+            display: inline-block;
+            width: 7px;
+            height: 13px;
+            margin-left: 5px;
+            background: var(--c);
+            vertical-align: -2px;
+            animation: blink 1s steps(2) infinite
+        }
+
+        .stand {
+            width: 84px;
+            height: 14px;
+            background: #26292c;
+            margin: 0 auto;
+            border-radius: 0 0 6px 6px
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: .2
+            }
+        }
+
+        @keyframes scroll {
+            to {
+                transform: translateY(-50%)
+            }
+        }
+
+        @keyframes run {
+            to {
+                stroke-dashoffset: -100
+            }
+        }
+
+        /* alerts */
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: .7rem
+        }
+
+        .chips {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: .7rem
+        }
+
+        .chip {
+            font: inherit;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            min-height: 64px;
+            padding: .8rem 2rem .8rem 1rem;
+            border: 1.5px solid var(--line);
+            background: var(--panel);
+            color: var(--ink);
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color .15s, background .15s
+        }
+
+        .chip b {
+            display: block;
+            font-weight: 600
+        }
+
+        .chip small {
+            display: block;
+            color: var(--mute);
+            font-size: .82rem;
+            line-height: 1.3
+        }
+
+        .chip:hover {
+            border-color: var(--amber)
+        }
+
+        .chip[aria-pressed=true] {
+            border-color: var(--amber);
+            background: var(--amber-soft)
+        }
+
+        .chip[aria-pressed=true]::after {
+            content: "\2713";
+            position: absolute;
+            top: .55rem;
+            right: .75rem;
+            font-weight: 700
+        }
+
+        .hint {
+            color: var(--mute);
+            margin: -.4rem 0 .9rem;
+            font-size: .92rem
+        }
+
+        /* results */
+        .cols {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 1.1rem;
+            align-items: start;
+            margin-top: 1.4rem
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 1.3rem
+        }
+
+        .card.alert {
+            border-left: 6px solid var(--amber);
+            border-radius: 6px 14px 14px 6px
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: .85rem;
+            font-weight: 600;
+            padding: .15rem .7rem;
+            border-radius: 6px;
+            background: var(--amber-soft)
+        }
+
+        .badge.high {
+            background: var(--teal-soft)
+        }
+
+        .fix {
+            font-size: 2.2rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin: .6rem 0 .2rem
+        }
+
+        .cause {
+            color: var(--mute);
+            margin: 0 0 .9rem
+        }
+
+        .why {
+            margin: 0 0 1.1rem
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 8.5rem 1fr 6.5rem;
+            gap: .7rem;
+            align-items: center;
+            padding: .35rem 0;
+            font-size: .95rem
+        }
+
+        .track {
+            height: 10px;
+            background: var(--bg);
+            border-radius: 5px;
+            overflow: hidden
+        }
+
+        .fill {
+            height: 100%;
+            width: 0;
+            background: var(--teal);
+            border-radius: 5px;
+            transition: width .7s ease
+        }
+
+        .row.top .fill {
+            background: var(--amber)
+        }
+
+        .num {
+            color: var(--mute);
+            text-align: right
+        }
+
+        details {
+            margin-top: 1rem;
+            border-top: 1px solid var(--line);
+            padding-top: .8rem
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            min-height: 32px
+        }
+
+        .mem {
+            margin: .6rem 0 0;
+            padding-left: 1.1rem;
+            color: var(--mute);
+            font-size: .92rem
+        }
+
+        .mem li {
+            margin: .3rem 0
+        }
+
+        .empty {
+            color: var(--mute);
+            margin: 0
+        }
+
+        .err {
+            color: var(--red)
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            font-size: .9rem;
+            color: var(--mute);
+            gap: .25rem;
+            margin-bottom: .8rem
+        }
+
+        input,
+        select {
+            font: inherit;
+            padding: .65rem .75rem;
+            border: 1.5px solid var(--line);
+            border-radius: 10px;
+            background: var(--bg);
+            color: var(--ink);
+            width: 100%
+        }
+
+        .btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .6rem
+        }
+
+        .btn {
+            font: inherit;
+            font-weight: 600;
+            min-height: 50px;
+            border-radius: 10px;
+            border: 0;
+            cursor: pointer
+        }
+
+        .btn.ok {
+            background: var(--teal);
+            color: #fff
+        }
+
+        .btn.no {
+            background: var(--red-soft);
+            color: var(--red)
+        }
+
+        @media (prefers-color-scheme:dark) {
+            .btn.ok {
+                color: #08201b
+            }
+        }
+
+        .btn:disabled {
+            opacity: .5;
+            cursor: wait
+        }
+
+        #msg {
+            margin: .9rem 0 0;
+            font-weight: 500
+        }
+
+        footer {
+            margin-top: 2.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: .5rem;
+            align-items: center;
+            color: var(--mute);
+            font-size: .85rem
+        }
+
+        footer span {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .25rem .7rem;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--panel)
+        }
+
+        @media (max-width:900px) {
+            .chips {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        @media (max-width:820px) {
+            .cols {
+                grid-template-columns: 1fr
+            }
+        }
+
+        @media (max-width:560px) {
+            .chips {
+                grid-template-columns: 1fr
+            }
+
+            .row {
+                grid-template-columns: 1fr 5.5rem
+            }
+
+            .track {
+                grid-column: 1/-1;
+                order: 3
+            }
+
+            .fix {
+                font-size: 1.8rem
+            }
+
+            .pill b {
+                display: none
+            }
+
+            .screen {
+                height: 170px
+            }
+        }
+
+        @media (max-width:440px) {
+            .rack {
+                display: none
+            }
+
+            .monitor {
+                width: 100%
+            }
+        }
+
+        @media (prefers-reduced-motion:reduce) {
+            * {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <header>
+            <svg viewBox="0 0 40 40" role="img" aria-label="Incident Responder logo">
+                <rect width="40" height="40" rx="10" fill="#e8a317" />
+                <path d="M6 22h7l4-10 6 18 4-8h7" fill="none" stroke="#1b1f23" stroke-width="3" stroke-linecap="round"
+                    stroke-linejoin="round" />
+            </svg>
+            <div>
+                <h1>Incident Responder</h1>
+                <p class="tag">Fixes that worked before, found in seconds</p>
+            </div>
+            <div class="pill" id="pill"><i></i><b id="pilltxt">Connecting</b></div>
+        </header>
+
+        <div class="stage" id="stage" aria-live="polite">
+            <div class="rack" aria-hidden="true">
+                <div class="unit"><i></i><i></i><b></b></div>
+                <div class="unit"><i></i><i></i><b></b></div>
+                <div class="unit"><i></i><i></i><b></b></div>
+            </div>
+            <div class="monitor">
+                <div class="bar"><span></span><span></span><span></span><em>prod-cluster</em></div>
+                <div class="screen">
+                    <div class="logs" aria-hidden="true">
+                        <div class="lines" id="lines"></div>
+                    </div>
+                    <svg class="pulse" viewBox="0 0 300 50" preserveAspectRatio="none" aria-hidden="true">
+                        <path class="calm" pathLength="100"
+                            d="M0 28 Q20 14 40 28 T80 28 T120 28 T160 28 T200 28 T240 28 T280 28 L300 28" />
+                        <path class="spike" pathLength="100"
+                            d="M0 28 H50 L62 6 L76 46 L90 12 L102 38 L112 28 H190 L202 4 L216 48 L230 14 L240 28 H300" />
+                    </svg>
+                    <div class="status" id="mstatus">All quiet. Pick an alert</div>
+                </div>
+                <div class="stand"></div>
+            </div>
+            <div class="rack" aria-hidden="true">
+                <div class="unit"><i></i><i></i><b></b></div>
+                <div class="unit"><i></i><i></i><b></b></div>
+                <div class="unit"><i></i><i></i><b></b></div>
+            </div>
+        </div>
+
+        <h2>What fired?</h2>
+        <p class="hint">Pick the closest match. You will get the fix that worked most often.</p>
+        <div class="chips" id="chips" role="group" aria-label="Alerts"></div>
+
+        <div class="cols" id="work" hidden>
+            <section class="card alert" id="result" aria-live="polite"></section>
+            <section class="card" id="log">
+                <h2>How did it go?</h2>
+                <label>Service<select id="svc">
+                        <option>api</option>
+                        <option>payments</option>
+                        <option>search</option>
+                        <option>auth</option>
+                    </select></label>
+                <label>Fix you applied<input id="fix" placeholder="e.g. rotate logs" autocomplete="off"></label>
+                <div class="btns"><button class="btn ok" id="yes">It worked</button><button class="btn no" id="no">It
+                        didn&rsquo;t work</button></div>
+                <p id="msg"></p>
+            </section>
+        </div>
+
+        <footer>Built with <span>Hindsight memory</span><span>Groq</span><span>FastAPI</span><span>pandas</span>
+        </footer>
+    </main>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const nice = s => s.replace(/_/g, ' ');
+        const DESC = { db_connections_high: 'Database connections near the limit', disk_full: 'A server is running out of disk space', error_rate_after_deploy: 'Errors jumped after a release', memory_climbing: 'Memory keeps growing over time', api_timeouts: 'Requests are timing out', cpu_saturated: 'CPU is maxed out' };
+        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+        const post = (u, b) => fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+        let symptom = '', cause = 'unknown';
+
+        const stage = (state, text) => { $('stage').className = 'stage ' + state; $('mstatus').textContent = text; };
+        const LOG = ['INFO api 200 GET /v1/orders 41ms', 'INFO worker queue depth 3', 'INFO auth token refreshed', 'DEBUG cache hit ratio 0.94', 'INFO payments charge ok 212ms', 'INFO search index synced', 'INFO api 200 GET /v1/users 28ms', 'DEBUG pool connections 41/100', 'INFO deploy check passed'];
+        const block = Array.from({ length: 18 }, (_, i) => `12:${String(10 + (i >> 1)).padStart(2, '0')}:${String((i * 17) % 60).padStart(2, '0')}  ${LOG[i % LOG.length]}`).join('<br>');
+        $('lines').innerHTML = block + '<br>' + block;
+
+        fetch('/symptoms').then(r => r.json()).then(list => {
+            $('chips').innerHTML = list.map(s => `<button class="chip" aria-pressed="false" data-s="${esc(s)}"><span><b>${esc(cap(nice(s)))}</b><small>${esc(DESC[s] || 'Production alert')}</small></span></button>`).join('');
+            $('pill').className = 'pill on'; $('pilltxt').textContent = 'Server online';
+        }).catch(() => {
+            $('pill').className = 'pill off'; $('pilltxt').textContent = 'Server offline';
+            $('chips').innerHTML = '<p class="err">Could not load alerts. Start the server with uvicorn and refresh.</p>';
+        });
+
+        $('chips').addEventListener('click', e => {
+            const b = e.target.closest('.chip'); if (!b) return;
+            document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+            suggest(b.dataset.s);
+        });
+
+        async function suggest(s) {
+            symptom = s; $('work').hidden = false; if (matchMedia('(max-width:820px)').matches) $('work').scrollIntoView({ behavior: 'smooth', block: 'start' }); $('log').style.opacity = .5;
+            stage('firing', 'Alert: ' + nice(s));
+            $('result').innerHTML = '<p class="empty">Looking through past incidents&hellip;</p>';
+            try {
+                const r = await post('/alert', { symptom: s });
+                const st = r.stats, top = st.fixes[0]; cause = st.cause;
+                const history = st.n ? `<span class="badge ${st.confidence === 'high' ? 'high' : ''}">${esc(st.confidence)} confidence from ${st.n} past incidents</span>` : '<span class="badge">No history for this alert yet</span>';
+                $('result').innerHTML = `${history}
+      <p class="fix">${esc(top.fix)}</p>
+      <p class="cause">${st.n ? 'Likely cause: ' + esc(st.cause) : 'This is a generic first step. Log the outcome to teach the agent.'}</p>
+      <p class="why">${esc(r.explanation)}</p>
+      ${st.fixes.map((f, i) => `<div class="row ${i ? '' : 'top'}"><span>${esc(f.fix)}</span><div class="track"><div class="fill" data-w="${Math.round(f.rate * 100)}"></div></div><span class="num">${Math.round(f.rate * 100)}% · ${f.tries} tries</span></div>`).join('')}
+      <details><summary>What the agent remembered</summary>${r.recalled.length ? `<ul class="mem">${r.recalled.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : '<p class="mem">Nothing recalled from memory for this alert yet.</p>'}</details>`;
+                requestAnimationFrame(() => document.querySelectorAll('.fill').forEach(f => f.style.width = f.dataset.w + '%'));
+                $('fix').value = top.fix; $('msg').textContent = ''; $('log').style.opacity = 1;
+                stage('firing', 'Suggested fix: ' + top.fix);
+            } catch (e) {
+                $('result').innerHTML = '<p class="err">Could not get a suggestion. Check that the server is running, then pick the alert again.</p>';
+                stage('fail', 'Connection problem');
+            }
+        }
+
+        async function save(worked) {
+            const fix = $('fix').value.trim();
+            if (!fix) { $('msg').className = 'err'; $('msg').textContent = 'Enter the fix you applied.'; return; }
+            $('yes').disabled = $('no').disabled = true;
+            try {
+                const r = await post('/outcome', { service: $('svc').value, symptom, root_cause: cause, fix, resolved: worked });
+                $('msg').className = '';
+                $('msg').textContent = `Saved. The agent now knows ${r.total} incidents. ` + (r.remembered ? 'Memory updated.' : 'Saved to the ledger, but memory was not updated.');
+                worked ? stage('', 'Resolved: ' + fix + ' worked') : stage('fail', fix + ' did not work. Try the next fix');
+            } catch (e) {
+                $('msg').className = 'err'; $('msg').textContent = 'Could not save. Check that the server is running and try again.';
+            }
+            $('yes').disabled = $('no').disabled = false;
+        }
+        $('yes').onclick = () => save(true);
+        $('no').onclick = () => save(false);
+    </script>
+</body>
+
+</html>
